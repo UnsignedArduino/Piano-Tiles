@@ -6,10 +6,10 @@ function setDurations () {
     for (let index = 0; index < 6; index++) {
         for (let index = 0; index < 6; index++) {
             Durations.push(music.beat(BeatFraction.Whole))
-            Durations.push(music.beat(BeatFraction.Quarter))
+            Durations.push(music.beat(BeatFraction.Eighth))
         }
         Durations.push(music.beat(BeatFraction.Double))
-        Durations.push(music.beat(BeatFraction.Quarter))
+        Durations.push(music.beat(BeatFraction.Eighth))
     }
 }
 function AddNotesB () {
@@ -199,16 +199,6 @@ info.setScore(0)
 info.setLife(3)
 pause(100)
 game.splash("Welcome to Piano Tiles!", "By Unsigned_Arduino on the MakeCode Forums (forum.makecode.com)")
-if (game.ask("Would you like the", "instructions?")) {
-    game.splash("In this game, you must play to the music in order to win. [1/9]")
-    game.splash("But, since I'm feeling good today, I will show you what keys to press. [2/9]")
-    game.splash("If the up button comes down, press the up button, etc... [3/9]")
-    game.splash("You have 3 lives. Every time you miss a note, you will lose a life. [4/9]")
-    game.splash("When you run out of lives, you die. [5/9]")
-    game.splash("You'll get 1 point for every note you press correctly. [6/9]")
-    game.splash("I hope you understand because I'm not giving you any more instructions! (Because I'm lazy) [8/9]")
-    game.splash("Press the [A] button to begin! [9/9]")
-}
 pause(500)
 MovingTextTarget.x = scene.screenWidth() / 2
 pause(3000)
@@ -229,10 +219,10 @@ forever(function () {
     pause(10)
 })
 forever(function () {
-    console.logValue("position", Position)
+    info.startCountdown((game.runtime() - StartTime) / 1000)
     pause(10)
 })
 forever(function () {
-    info.startCountdown((game.runtime() - StartTime) / 1000)
+    console.logValue("position", Position)
     pause(10)
 })
