@@ -1,5 +1,5 @@
 {
-    "name": "Piano Tiles",
+    "name": "Piano Tiles - Twinkle Twinkle Little Star",
     "dependencies": {
         "device": "*",
         "Timers": "github:darzu/arcade-timers#v1.0.0",

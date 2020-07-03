@@ -43,6 +43,12 @@ function setNotes () {
     AddNotesB()
     AddNotesA()
 }
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (Volume >= 32) {
+        Volume += -32
+        music.setVolume(Volume)
+    }
+})
 function pressTile (Dir: number) {
     if (Tiles.length > 0) {
         OldestTile = Tiles[0]
@@ -65,6 +71,12 @@ function pressTile (Dir: number) {
         }
     }
 }
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (Volume <= 224) {
+        Volume += 32
+        music.setVolume(Math.min(255, Volume))
+    }
+})
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     pressTile(1)
 })
@@ -99,6 +111,7 @@ let OldestTile: Sprite = null
 let Notes: number[] = []
 let Durations: number[] = []
 let StartTime = 0
+let Volume = 0
 let Multiplier = 0
 let Tiles: Sprite[] = []
 let MovingText = sprites.create(img`
@@ -136,6 +149,13 @@ setDurations()
 Tiles = sprites.allOfKind(SpriteKind.Tile)
 Multiplier = 1
 let Speed = 50
+// Set this to the default volume of your device.
+//
+//
+// Computer: 128
+//
+// PyGamer: 32
+Volume = 32
 music.setTempo(60)
 console.log("Welcome to the Piano Tiles console")
 scene.setBackgroundImage(img`
