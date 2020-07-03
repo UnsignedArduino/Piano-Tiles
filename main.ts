@@ -52,7 +52,7 @@ function pressTile (Dir: number) {
             timer.background(function () {
                 music.playTone(Note2, Duration)
             })
-            info.changeScoreBy(1)
+            info.changeScoreBy(Multiplier)
             sprites.setDataBoolean(OldestTile, "Pressed", true)
             OldestTile.destroy(effects.fountain, 100)
             devnull = Tiles.removeAt(0)
@@ -99,6 +99,7 @@ let OldestTile: Sprite = null
 let Notes: number[] = []
 let Durations: number[] = []
 let StartTime = 0
+let Multiplier = 0
 let Tiles: Sprite[] = []
 let MovingText = sprites.create(img`
 f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f 
@@ -133,6 +134,8 @@ MovingText.follow(MovingTextTarget, 100)
 setNotes()
 setDurations()
 Tiles = sprites.allOfKind(SpriteKind.Tile)
+Multiplier = 1
+let Speed = 50
 music.setTempo(60)
 console.log("Welcome to the Piano Tiles console")
 scene.setBackgroundImage(img`
@@ -357,7 +360,7 @@ f f f f f f f f f f f f f f f f
         sprites.setDataNumber(Tile, "Note", Notes[TilePosition])
         sprites.setDataBoolean(Tile, "Pressed", false)
         Tile.setPosition(Math.map(Notes[TilePosition], 131, 988, 8, scene.screenWidth() - 8), 0)
-        Tile.vy = 50
+        Tile.vy = Speed
         Tile.setFlag(SpriteFlag.AutoDestroy, true)
         Tiles.push(Tile)
     }
@@ -365,6 +368,10 @@ f f f f f f f f f f f f f f f f
     TilePosition += 1
     if (TilePosition >= Notes.length - 1) {
         TilePosition = 0
+        Multiplier += 1
+        Speed += 10
+        effects.confetti.startScreenEffect(500)
+        music.powerUp.play()
         pause(990)
     }
 })
