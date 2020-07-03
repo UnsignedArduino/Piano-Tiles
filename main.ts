@@ -1,5 +1,6 @@
 namespace SpriteKind {
     export const Narrator = SpriteKind.create()
+    export const Tile = SpriteKind.create()
 }
 function setDurations () {
     Durations = []
@@ -12,21 +13,27 @@ function setDurations () {
         Durations.push(music.beat(BeatFraction.Eighth))
     }
 }
+controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
+    pressTile(3)
+})
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    pressTile(2)
+})
 function AddNotesB () {
     for (let index = 0; index < 2; index++) {
-        for (let Value of [392, 392, 349, 349, 330, 392, 294]) {
-            Notes.push(Value)
+        for (let Note3 of [392, 392, 349, 349, 330, 392, 294]) {
+            Notes.push(Note3)
             Notes.push(0)
         }
     }
 }
 function AddNotesA () {
-    for (let Value of [262, 262, 392, 392, 440, 523, 392]) {
-        Notes.push(Value)
+    for (let Note3 of [262, 262, 392, 392, 440, 523, 392]) {
+        Notes.push(Note3)
         Notes.push(0)
     }
-    for (let Value of [349, 349, 330, 330, 294, 392, 262]) {
-        Notes.push(Value)
+    for (let Note3 of [349, 349, 330, 330, 294, 392, 262]) {
+        Notes.push(Note3)
         Notes.push(0)
     }
 }
@@ -36,8 +43,63 @@ function setNotes () {
     AddNotesB()
     AddNotesA()
 }
+function pressTile (Dir: number) {
+    if (Tiles.length > 0) {
+        OldestTile = Tiles[0]
+        if (sprites.readDataNumber(OldestTile, "Direction") == Dir) {
+            Note2 = Notes[sprites.readDataNumber(OldestTile, "TileNumber")]
+            Duration = Durations[sprites.readDataNumber(OldestTile, "TileNumber")]
+            timer.background(function () {
+                music.playTone(Note2, Duration)
+            })
+            info.changeScoreBy(1)
+            sprites.setDataBoolean(OldestTile, "Pressed", true)
+            OldestTile.destroy(effects.fountain, 100)
+            devnull = Tiles.removeAt(0)
+        } else {
+            timer.background(function () {
+                music.playTone(311, music.beat(BeatFraction.Half))
+            })
+            info.changeLifeBy(-1)
+            scene.cameraShake(4, 500)
+        }
+    }
+}
+controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
+    pressTile(1)
+})
+function displayTime () {
+    info.startCountdown((game.runtime() - StartTime) / 1000)
+}
+sprites.onDestroyed(SpriteKind.Tile, function (sprite) {
+    if (!(sprites.readDataBoolean(sprite, "Pressed"))) {
+        timer.background(function () {
+            music.playTone(311, music.beat(BeatFraction.Half))
+        })
+        info.changeLifeBy(-1)
+        scene.cameraShake(4, 500)
+    }
+    devnull = Tiles.removeAt(Tiles.indexOf(sprite))
+})
+controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+    pressTile(0)
+})
+info.onLifeZero(function () {
+    timer.after(1000, function () {
+        game.over(false)
+    })
+})
+let Tile: Sprite = null
+let Direction = 0
+let TilePosition = 0
+let devnull: Sprite = null
+let Duration = 0
+let Note2 = 0
+let OldestTile: Sprite = null
 let Notes: number[] = []
 let Durations: number[] = []
+let StartTime = 0
+let Tiles: Sprite[] = []
 let MovingText = sprites.create(img`
 f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f 
@@ -70,8 +132,8 @@ MovingText.y = scene.screenHeight() / 2
 MovingText.follow(MovingTextTarget, 100)
 setNotes()
 setDurations()
+Tiles = sprites.allOfKind(SpriteKind.Tile)
 music.setTempo(60)
-let Position = 0
 console.log("Welcome to the Piano Tiles console")
 scene.setBackgroundImage(img`
 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
@@ -204,25 +266,105 @@ MovingTextTarget.x = scene.screenWidth() / 2
 pause(3000)
 MovingTextTarget.left = scene.screenWidth() + 65
 pause(2000)
-let StartTime = game.runtime() - 100
+StartTime = game.runtime() - 500
+displayTime()
 forever(function () {
-    if (Notes[Position] == 0) {
-        music.rest(Durations[Position])
-    } else {
-        music.playTone(Notes[Position], Durations[Position])
+    displayTime()
+    pause(50)
+})
+forever(function () {
+    if (!(Notes[TilePosition] == 0)) {
+        Direction = Math.randomRange(0, 3)
+        if (Direction == 0) {
+            Tile = sprites.create(img`
+f f f f f f f f f f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f 1 1 1 1 f f f f f f 
+f f f f f 1 1 1 1 1 1 f f f f f 
+f f f f 1 1 1 1 1 1 1 1 f f f f 
+f f f 1 1 1 1 1 1 1 1 1 1 f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f f f f f f f f f f 
+`, SpriteKind.Tile)
+        } else if (Direction == 1) {
+            Tile = sprites.create(img`
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f 1 f f f f f 
+f f f f f f f f f f 1 1 f f f f 
+f f f f f f f f f f 1 1 1 f f f 
+f f f f f f f f f f 1 1 1 1 f f 
+f 1 1 1 1 1 1 1 1 1 1 1 1 1 1 f 
+f 1 1 1 1 1 1 1 1 1 1 1 1 1 1 f 
+f f f f f f f f f f 1 1 1 1 f f 
+f f f f f f f f f f 1 1 1 f f f 
+f f f f f f f f f f 1 1 f f f f 
+f f f f f f f f f f 1 f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+`, SpriteKind.Tile)
+        } else if (Direction == 2) {
+            Tile = sprites.create(img`
+f f f f f f f f f f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f 1 1 1 1 1 1 1 1 1 1 f f f 
+f f f f 1 1 1 1 1 1 1 1 f f f f 
+f f f f f 1 1 1 1 1 1 f f f f f 
+f f f f f f 1 1 1 1 f f f f f f 
+f f f f f f f 1 1 f f f f f f f 
+f f f f f f f f f f f f f f f f 
+`, SpriteKind.Tile)
+        } else if (Direction == 3) {
+            Tile = sprites.create(img`
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f 1 f f f f f f f f f f 
+f f f f 1 1 f f f f f f f f f f 
+f f f 1 1 1 f f f f f f f f f f 
+f f 1 1 1 1 f f f f f f f f f f 
+f 1 1 1 1 1 1 1 1 1 1 1 1 1 1 f 
+f 1 1 1 1 1 1 1 1 1 1 1 1 1 1 f 
+f f 1 1 1 1 f f f f f f f f f f 
+f f f 1 1 1 f f f f f f f f f f 
+f f f f 1 1 f f f f f f f f f f 
+f f f f f 1 f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+f f f f f f f f f f f f f f f f 
+`, SpriteKind.Tile)
+        }
+        sprites.setDataNumber(Tile, "TileNumber", TilePosition)
+        sprites.setDataNumber(Tile, "Direction", Direction)
+        sprites.setDataNumber(Tile, "Note", Notes[TilePosition])
+        sprites.setDataBoolean(Tile, "Pressed", false)
+        Tile.setPosition(Math.map(Notes[TilePosition], 131, 988, 8, scene.screenWidth() - 8), 0)
+        Tile.vy = 50
+        Tile.setFlag(SpriteFlag.AutoDestroy, true)
+        Tiles.push(Tile)
     }
-    Position += 1
-    if (Position >= Notes.length - 1) {
-        Position = 0
+    music.rest(Durations[TilePosition])
+    TilePosition += 1
+    if (TilePosition >= Notes.length - 1) {
+        TilePosition = 0
         pause(990)
     }
-    pause(10)
-})
-forever(function () {
-    info.startCountdown((game.runtime() - StartTime) / 1000)
-    pause(10)
-})
-forever(function () {
-    console.logValue("position", Position)
-    pause(10)
 })
