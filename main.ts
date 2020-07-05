@@ -7,10 +7,8 @@ function setDurations () {
     for (let index = 0; index < 6; index++) {
         for (let index = 0; index < 6; index++) {
             Durations.push(music.beat(BeatFraction.Whole))
-            Durations.push(music.beat(BeatFraction.Eighth))
         }
         Durations.push(music.beat(BeatFraction.Double))
-        Durations.push(music.beat(BeatFraction.Eighth))
     }
 }
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -21,20 +19,17 @@ controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 function AddNotesB () {
     for (let index = 0; index < 2; index++) {
-        for (let Note3 of [392, 392, 349, 349, 330, 392, 294]) {
-            Notes.push(Note3)
-            Notes.push(0)
+        for (let Note2 of [392, 392, 349, 349, 330, 392, 294]) {
+            Notes.push(Note2)
         }
     }
 }
 function AddNotesA () {
-    for (let Note3 of [262, 262, 392, 392, 440, 523, 392]) {
-        Notes.push(Note3)
-        Notes.push(0)
+    for (let Note2 of [262, 262, 392, 392, 440, 523, 392]) {
+        Notes.push(Note2)
     }
-    for (let Note3 of [349, 349, 330, 330, 294, 392, 262]) {
-        Notes.push(Note3)
-        Notes.push(0)
+    for (let Note2 of [349, 349, 330, 330, 294, 392, 262]) {
+        Notes.push(Note2)
     }
 }
 function setNotes () {
@@ -53,10 +48,8 @@ function pressTile (Dir: number) {
     if (Tiles.length > 0) {
         OldestTile = Tiles[0]
         if (sprites.readDataNumber(OldestTile, "Direction") == Dir) {
-            Note2 = Notes[sprites.readDataNumber(OldestTile, "TileNumber")]
-            Duration = Durations[sprites.readDataNumber(OldestTile, "TileNumber")]
             timer.background(function () {
-                music.playTone(Note2, Duration)
+                music.playTone(sprites.readDataNumber(OldestTile, "Note"), sprites.readDataNumber(OldestTile, "Duration"))
             })
             info.changeScoreBy(Multiplier)
             sprites.setDataBoolean(OldestTile, "Pressed", true)
@@ -68,6 +61,7 @@ function pressTile (Dir: number) {
             })
             info.changeLifeBy(-1)
             scene.cameraShake(4, 500)
+            OldestTile.startEffect(effects.fire, 500)
         }
     }
 }
@@ -101,12 +95,10 @@ info.onLifeZero(function () {
         game.over(false)
     })
 })
+let TilePosition = 0
 let Tile: Sprite = null
 let Direction = 0
-let TilePosition = 0
 let devnull: Sprite = null
-let Duration = 0
-let Note2 = 0
 let OldestTile: Sprite = null
 let Notes: number[] = []
 let Durations: number[] = []
@@ -154,7 +146,7 @@ let Speed = 50
 //
 // Computer: 128
 //
-// PyGamer: 32
+// PyGamer: 64
 Volume = 32
 music.setTempo(60)
 console.log("Welcome to the Piano Tiles console")
@@ -296,10 +288,9 @@ forever(function () {
     pause(50)
 })
 forever(function () {
-    if (!(Notes[TilePosition] == 0)) {
-        Direction = Math.randomRange(0, 3)
-        if (Direction == 0) {
-            Tile = sprites.create(img`
+    Direction = Math.randomRange(0, 3)
+    if (Direction == 0) {
+        Tile = sprites.create(img`
 f f f f f f f f f f f f f f f f 
 f f f f f f f 1 1 f f f f f f f 
 f f f f f f 1 1 1 1 f f f f f f 
@@ -317,8 +308,8 @@ f f f f f f f 1 1 f f f f f f f
 f f f f f f f 1 1 f f f f f f f 
 f f f f f f f f f f f f f f f f 
 `, SpriteKind.Tile)
-        } else if (Direction == 1) {
-            Tile = sprites.create(img`
+    } else if (Direction == 1) {
+        Tile = sprites.create(img`
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
@@ -336,8 +327,8 @@ f f f f f f f f f f f f f f f f
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
 `, SpriteKind.Tile)
-        } else if (Direction == 2) {
-            Tile = sprites.create(img`
+    } else if (Direction == 2) {
+        Tile = sprites.create(img`
 f f f f f f f f f f f f f f f f 
 f f f f f f f 1 1 f f f f f f f 
 f f f f f f f 1 1 f f f f f f f 
@@ -355,8 +346,8 @@ f f f f f f 1 1 1 1 f f f f f f
 f f f f f f f 1 1 f f f f f f f 
 f f f f f f f f f f f f f f f f 
 `, SpriteKind.Tile)
-        } else if (Direction == 3) {
-            Tile = sprites.create(img`
+    } else if (Direction == 3) {
+        Tile = sprites.create(img`
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
@@ -374,16 +365,15 @@ f f f f f f f f f f f f f f f f
 f f f f f f f f f f f f f f f f 
 f f f f f f f f f f f f f f f f 
 `, SpriteKind.Tile)
-        }
-        sprites.setDataNumber(Tile, "TileNumber", TilePosition)
-        sprites.setDataNumber(Tile, "Direction", Direction)
-        sprites.setDataNumber(Tile, "Note", Notes[TilePosition])
-        sprites.setDataBoolean(Tile, "Pressed", false)
-        Tile.setPosition(Math.map(Notes[TilePosition], 131, 988, 8, scene.screenWidth() - 8), 0)
-        Tile.vy = Speed
-        Tile.setFlag(SpriteFlag.AutoDestroy, true)
-        Tiles.push(Tile)
     }
+    sprites.setDataNumber(Tile, "Direction", Direction)
+    sprites.setDataNumber(Tile, "Note", Notes[TilePosition])
+    sprites.setDataNumber(Tile, "Duration", Durations[TilePosition])
+    sprites.setDataBoolean(Tile, "Pressed", false)
+    Tile.setPosition(Math.map(Notes[TilePosition], 131, 988, 8, scene.screenWidth() - 8), 0)
+    Tile.vy = Speed
+    Tile.setFlag(SpriteFlag.AutoDestroy, true)
+    Tiles.push(Tile)
     music.rest(Durations[TilePosition])
     TilePosition += 1
     if (TilePosition >= Notes.length - 1) {
