@@ -37,6 +37,8 @@ function setNotes () {
     AddNotesA()
     AddNotesB()
     AddNotesA()
+    Notes.push(262)
+    Durations.push(music.beat(BeatFraction.Double))
 }
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     if (Volume >= 32) {
