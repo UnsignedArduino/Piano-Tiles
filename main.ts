@@ -47,7 +47,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     }
 })
 function pressTile (Dir: number) {
-    if (Tiles.length > 0) {
+    if (Tiles.length > 0 && !(Dead)) {
         OldestTile = Tiles[0]
         if (sprites.readDataNumber(OldestTile, "Direction") == Dir) {
             timer.background(function () {
@@ -93,7 +93,8 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     pressTile(0)
 })
 info.onLifeZero(function () {
-    timer.after(1000, function () {
+    Dead = true
+    timer.after(2000, function () {
         game.over(false)
     })
 })
@@ -106,6 +107,7 @@ let Notes: number[] = []
 let Durations: number[] = []
 let StartTime = 0
 let Volume = 0
+let Dead = false
 let Multiplier = 0
 let Tiles: Sprite[] = []
 let MovingText = sprites.create(img`
@@ -143,6 +145,7 @@ setDurations()
 Tiles = sprites.allOfKind(SpriteKind.Tile)
 Multiplier = 1
 let Speed = 50
+Dead = false
 // Set this to the default volume of your device.
 //
 //
@@ -382,6 +385,7 @@ f f f f f f f f f f f f f f f f
         TilePosition = 0
         Multiplier += 1
         Speed += 10
+        info.changeLifeBy(1)
         effects.confetti.startScreenEffect(500)
         music.powerUp.play()
         pause(990)
